@@ -1,5 +1,7 @@
 # Hipo - Android Summer Internship
 
+**Test the app** -> https://appetize.io/app/nu5pmm8ervmufmegyrxwd6durm?device=pixel4&scale=75&orientation=portrait&osVersion=10.0
+
 - I fetch the JSON file that Hipo gave by using Retrofit in the StartActivity and I use RecyclerView to list all members. 
 - After tapping one of the members, her/his details are shown with custom dialog.
 - Users can sort members by their names, ages or locations with ascending or descending order.
