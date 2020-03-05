@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
 
-    private ArrayList<Member> mMembers;
+    private ArrayList<Member> mMembers = (ArrayList<Member>) App.company.getMembers().clone();
     private RecyclerView mRecyclerMembers;
     private Button mBtnAddMe;
     private EditText mEdtSearch;
@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
                 mSortIsAscending = isAscending;
 
                 // Get all members with original order.
-                mMembers = App.company.getMembers();
+                mMembers = (ArrayList<Member>) App.company.getMembers().clone();
 
                 // Sort them
                 sortMembers(actionId, isAscending);
@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         mMembers = new ArrayList<>();
-        mMembers = App.company.getMembers();
+        mMembers = (ArrayList<Member>) App.company.getMembers().clone();
 
         mRecyclerMembers = findViewById(R.id.main_recycler_members);
         mEdtSearch = findViewById(R.id.main_edt_search);
@@ -95,9 +95,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Member member = new Member("Aziz Utku Kagitci", 22, "Ankara", "azizutku");
-                member.setHipo("Android Summer Intern", 0);
+                member.setHipo("Intern Candidate", 0);
                 App.company.getMembers().add(member);
-                mMembers = App.company.getMembers();
+                mMembers = (ArrayList<Member>) App.company.getMembers().clone();
 
                 // Sort again after adding new member
                 if (mSortSelected >= 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -139,6 +139,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
 
+                // If searched string is empty refresh the recyclerview
                 if (s.length() == 0) {
                     mImgClear.setVisibility(View.GONE);
                     mPopupSuggestion.dismiss();
@@ -146,21 +147,18 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
+                // If searched string is not empty show the clear image
                 mImgClear.setVisibility(View.VISIBLE);
 
                 ArrayList<String> suggestions = new ArrayList<>();
-                ArrayList<Member> searchedMembers = new ArrayList<>();
 
-                for (int i = 0; i < mMembers.size(); ++i) {
+                // Filter suggestions
+                for (int i = 0; i < mMembers.size() && suggestions.size() <= 5; ++i) {
                     String name = mMembers.get(i).getName();
                     if (mMembers.get(i).getName().toLowerCase().trim().contains(s.toString().trim().toLowerCase())) {
-                        if (suggestions.size() <= 5) {
-                            suggestions.add(name);
-                        }
-                        searchedMembers.add(mMembers.get(i));
+                        suggestions.add(name);
                     }
                 }
-
 
                 if (suggestions.size() == 0) {
                     mPopupSuggestion.dismiss();
@@ -201,13 +199,9 @@ public class MainActivity extends AppCompatActivity {
         mPopupSuggestion.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // To avoid getting ArrayBound error.
-                if (position >= mSuggestions.length) {
-                    return;
-                }
                 search(mSuggestions[position]);
                 mEdtSearch.setText(mSuggestions[position]);
-                mEdtSearch.setSelection(mSuggestions[position].length());
+                mEdtSearch.setSelection(mEdtSearch.getText().length());
                 mPopupSuggestion.dismiss();
             }
         });
@@ -224,7 +218,6 @@ public class MainActivity extends AppCompatActivity {
                         return o1.getName().compareTo(o2.getName());
                     }
                 });
-                updateRecycler();
                 break;
             case Constants.SORT_AGE:
                 mMembers.sort(new Comparator<Member>() {
@@ -239,7 +232,6 @@ public class MainActivity extends AppCompatActivity {
                         return -1;
                     }
                 });
-                updateRecycler();
                 break;
             case Constants.SORT_LOCATION:
                 mMembers.sort(new Comparator<Member>() {
